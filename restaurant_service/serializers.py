@@ -29,7 +29,7 @@ class MenuSerializer(serializers.ModelSerializer):
         ]
 
 
-class VoteSerializer(serializers.ModelSerializer):
+class VoteSerializerV1(serializers.ModelSerializer):
     menu = serializers.PrimaryKeyRelatedField(
         queryset=Menu.objects.filter(date=date.today())
     )
@@ -41,10 +41,45 @@ class VoteSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         menu = validated_data.get("menu")
+
+        # We are checking if the user has already voted 3 times for this menu.
+        user = self.context["request"].user
+        if Vote.objects.filter(worker=user, menu=menu).count() >= 3:
+            raise serializers.ValidationError(
+                "You have reached the maximum number of votes for this menu."
+            )
+
         menu.vote_count += 1
         menu.save()
 
-        validated_data["worker"] = self.context["request"].user
+        validated_data["worker"] = user
+        return super().create(validated_data)
+
+
+class VoteSerializerV2(serializers.ModelSerializer):
+    menu = serializers.PrimaryKeyRelatedField(
+        queryset=Menu.objects.filter(date=date.today())
+    )
+
+    class Meta:
+        model = Vote
+        fields = "__all__"
+        read_only_fields = ("worker",)
+
+    def create(self, validated_data):
+        menu = validated_data.get("menu")
+
+        # We are checking if the user has already voted for this menu.
+        user = self.context["request"].user
+        if Vote.objects.filter(worker=user, menu=menu).exists():
+            raise serializers.ValidationError(
+                "You have already voted for this menu."
+            )
+
+        menu.vote_count += 1
+        menu.save()
+
+        validated_data["worker"] = user
         return super().create(validated_data)
 
 

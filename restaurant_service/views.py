@@ -1,6 +1,6 @@
 from datetime import date
 
-from rest_framework import viewsets, status, generics, permissions
+from rest_framework import viewsets, status, generics, permissions, versioning
 from rest_framework.response import Response
 
 from restaurant_service.models import Restaurant, Menu, Vote
@@ -8,8 +8,9 @@ from restaurant_service.permissions import IsAdminOrReadOnly
 from restaurant_service.serializers import (
     RestaurantSerializer,
     MenuSerializer,
-    VoteSerializer,
     TopMenuSerializer,
+    VoteSerializerV2,
+    VoteSerializerV1,
 )
 
 
@@ -61,40 +62,30 @@ class TodayMenuView(generics.ListAPIView):
 
 
 class VoteView(generics.CreateAPIView):
-    serializer_class = VoteSerializer
+    versioning_class = versioning.AcceptHeaderVersioning
     permission_classes = [permissions.IsAuthenticated]
 
+    def get_serializer_class(self):
+        version = self.request.version
+        if version == "1.0":
+            return VoteSerializerV1
+        elif version == "2.0":
+            return VoteSerializerV2
+
+        return VoteSerializerV2
+
+    def get_queryset(self):
+        # Return an empty queryset since it is not used for database
+        # operations.
+        return Vote.objects.none()
+
     def create(self, request, *args, **kwargs):
-        menu_id = request.data.get("menu")
-
-        # Check if the menu with the specified identifier exists and
-        # corresponds to today's date.
-        try:
-            menu = Menu.objects.get(id=menu_id, date=date.today())
-        except Menu.DoesNotExist:
-            return Response(
-                {
-                    "error": "Invalid menu ID or menu is not available for "
-                             "voting"
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        # Check if the employee has already voted for this menu.
-        if Vote.objects.filter(worker=request.user, menu=menu).exists():
-            return Response(
-                {"error": "You have already voted for this menu"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        # Create a new vote.
-        serializer = self.get_serializer(data=request.data)
+        serializer_class = self.get_serializer_class()
+        serializer = serializer_class(
+            data=request.data, context={"request": request}
+        )
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
-
-        # Increase the vote counter in the menu.
-        menu.vote_count += 1
-        menu.save()
 
         headers = self.get_success_headers(serializer.data)
         return Response(
@@ -104,8 +95,13 @@ class VoteView(generics.CreateAPIView):
 
 class TopMenuView(generics.ListAPIView):
     serializer_class = TopMenuSerializer
+    versioning_class = versioning.AcceptHeaderVersioning
 
     def get_queryset(self):
         today = date.today()
-        top_menus = Menu.objects.filter(date=today).order_by("-vote_count")[:3]
-        return top_menus
+        queryset = Menu.objects.filter(date=today)
+        if self.request.version == "1.0":
+            queryset = queryset.order_by("-vote_count")[:1]
+        elif self.request.version == "2.0":
+            queryset = queryset.order_by("-vote_count")[:3]
+        return queryset
