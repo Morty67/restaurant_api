@@ -67,13 +67,15 @@ class VoteView(generics.CreateAPIView):
     def create(self, request, *args, **kwargs):
         menu_id = request.data.get("menu")
 
-        # Check if the menu with the specified identifier exists and corresponds to today's date.
+        # Check if the menu with the specified identifier exists and
+        # corresponds to today's date.
         try:
             menu = Menu.objects.get(id=menu_id, date=date.today())
         except Menu.DoesNotExist:
             return Response(
                 {
-                    "error": "Invalid menu ID or menu is not available for voting"
+                    "error": "Invalid menu ID or menu is not available for "
+                             "voting"
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
