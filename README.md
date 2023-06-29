@@ -30,7 +30,7 @@ python manage.py runserver
 ## Run Docker 🐳
 Docker must be installed 
 ```shell
-*  docker-compose up --build
+* docker-compose up --build
 * docker exec -it ********* python manage.py createsuperuser {********* - id your container}
 ```
 
@@ -40,7 +40,6 @@ Domain:
 *  localhost:8000
 *  create new user - api/user/register/
 *  get JWT Token - api/user/token/
-* 
 
 ## Features:
 
