@@ -10,8 +10,8 @@ from restaurant_service.views import (
 )
 
 router = routers.DefaultRouter()
-router.register("restaurants", RestaurantViewSet,  basename="restaurants")
-router.register("menus", MenuViewSet,   basename="menus")
+router.register("restaurants", RestaurantViewSet, basename="restaurants")
+router.register("menus", MenuViewSet, basename="menus")
 
 
 urlpatterns = [
