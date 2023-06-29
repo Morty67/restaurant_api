@@ -51,3 +51,5 @@ Domain:
 *  Employee Registration: Employees can create accounts and participate in the voting process.
 *  Current Day Menu: The backend provides an endpoint to fetch the menu for the current day, allowing employees to view available options (Employees can view all available menus for the current day).
 *  Voting Results: The backend provides an endpoint to retrieve the voting results for the current day, helping employees make informed decisions (The top 3 menus based on voting results are displayed).
+*  To check the version using Postman, the version can be passed in the headers./ Get - http://127.0.0.1:8000/api/rest/result/ Key-Accept  Value-application/json; version=2.0 (or 1.0) Two different versions of the application will showcase different functionalities.
+*  To check the version using Postman, the version can be passed in the headers. / Post http://127.0.0.1:8000/api/rest/votes/ Key-Accept  Value-application/json; version=2.0 (or 1.0) and Key-Authorization Value-Bearer(<your JWT>) Two different versions of the application will showcase different functionalities.
