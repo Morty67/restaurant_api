@@ -7,7 +7,7 @@ The project will be developed using the following technologies:
 
 ## Installing / Getting started:
 ```shell
-To get started, you need to clone the repository from GitHub: https://github.com/Morty67/restaurant_api/tree/developer
+To get started, you need to clone the repository from GitHub: https://github.com/Morty67/restaurant_api/
 Python 3 must be installed
 
 python -m venv venv
