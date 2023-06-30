@@ -11,7 +11,7 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
 from unittest.mock import patch
-from restaurant_service.models import Restaurant, Vote
+from restaurant_service.models import Restaurant
 from django.contrib.auth import get_user_model
 
 pytestmark = pytest.mark.django_db
@@ -108,4 +108,46 @@ def test_get_top_menu_version_2():
     url = reverse("restaurant:result-votes")
     headers = {"Accept": "application/json; version=2.0"}
     response = client.get(url, format="json", headers=headers)
+    assert response.status_code == status.HTTP_200_OK
+
+
+def test_list_menus():
+    client = APIClient()
+    url = reverse("restaurant:menus-list")
+    response = client.get(url)
+
+    assert response.status_code == status.HTTP_200_OK
+    assert len(response.data) == 0
+
+
+def test_get_today_menu():
+    client = APIClient()
+
+    # Authenticate as admin
+    admin_user = User.objects.create_superuser(
+        email="admin@example.com", password="admin"
+    )
+    client.force_authenticate(user=admin_user)
+
+    url = reverse("restaurant:today-menu")
+    response = client.get(url)
+
+    assert response.status_code == status.HTTP_200_OK
+
+
+def test_top_menu_version_1():
+    client = APIClient()
+    url = reverse("restaurant:result-votes")
+    headers = {"Accept": "application/json; version=1.0"}
+    response = client.get(url, headers=headers)
+
+    assert response.status_code == status.HTTP_200_OK
+
+
+def test_top_menu_version_2():
+    client = APIClient()
+    url = reverse("restaurant:result-votes")
+    headers = {"Accept": "application/json; version=2.0"}
+    response = client.get(url, headers=headers)
+
     assert response.status_code == status.HTTP_200_OK
