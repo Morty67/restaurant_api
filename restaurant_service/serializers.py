@@ -37,7 +37,7 @@ class VoteSerializerV1(serializers.ModelSerializer):
     class Meta:
         model = Vote
         fields = "__all__"
-        read_only_fields = ("worker",)
+        read_only_fields = ["worker"]
 
     def create(self, validated_data):
         menu = validated_data.get("menu")
@@ -64,7 +64,7 @@ class VoteSerializerV2(serializers.ModelSerializer):
     class Meta:
         model = Vote
         fields = "__all__"
-        read_only_fields = ("worker",)
+        read_only_fields = ["worker"]
 
     def create(self, validated_data):
         menu = validated_data.get("menu")
